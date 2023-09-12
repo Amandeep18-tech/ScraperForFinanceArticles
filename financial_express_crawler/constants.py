@@ -1,2 +1,3 @@
 sqs_queue_name = "nlp-finance-india"
-chrome_driver_path = "./webdriver/chromedriver"
+chrome_driver_path = "/opt/chromedriver"
+binary_path ='/opt/chrome/chrome'

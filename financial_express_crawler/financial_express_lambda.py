@@ -5,6 +5,7 @@ import logging
 import traceback
 
 from pathlib import Path
+from tempfile import mkdtemp
 from selenium import webdriver
 from dateutil.parser import parse
 from selenium.webdriver.common.by import By
@@ -44,11 +45,23 @@ def scrollPage(driver: webdriver.Chrome, N=7):
         
 def get_chrome_driver():
     try:
-        options = Options()
-        options.add_argument("--headless=new")
-        options.add_argument("--window-size=1920,1080")
-        service = ChromeService(executable_path=constants.chrome_driver_path)
-        driver = webdriver.Chrome(service=service, options=options)
+        options = webdriver.ChromeOptions()
+        service = webdriver.ChromeService(constants.chrome_driver_path)
+        options.binary_location = constants.binary_path
+        options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        options.add_argument("--disable-gpu")
+        options.add_argument("--window-size=1280x1696")
+        options.add_argument("--single-process")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-dev-tools")
+        options.add_argument("--no-zygote")
+        options.add_argument(f"--user-data-dir={mkdtemp()}")
+        options.add_argument(f"--data-path={mkdtemp()}")
+        options.add_argument(f"--disk-cache-dir={mkdtemp()}")
+        options.add_argument("--remote-debugging-port=9222")
+        driver = webdriver.Chrome(options=options, service=service)
+
     except Exception as e:
         logger.error("Error : {0}\nException : {1}".format(e, traceback.format_exc()))
     return driver
@@ -173,7 +186,7 @@ def date_parse(input_string):
         logger.error("Error : {0}\nException : {1}".format(e, traceback.format_exc()))
     return x
 
-def lambda_handler(event,context):
+def lambda_handler(event=None,context=None):
     news_list = finex_daily_extractor()
     if news_list:
         logger.info(news_list)
@@ -183,4 +196,4 @@ def lambda_handler(event,context):
         logger.error("Failed to get news from Financial Express ")
 
 if __name__ == '__main__':
-    lambda_handler(event='',context='')
+    lambda_handler()
